@@ -1,0 +1,5 @@
+---
+# vars file for ansible-role-kubernetes-strictarp
+kubernetes_strictARP: true
+kubernetes_kubeconfig: /home/ansible/.ci/kubeconfig/kubeconfig_minikube04/config
+kubernetes_context: "minikube04"

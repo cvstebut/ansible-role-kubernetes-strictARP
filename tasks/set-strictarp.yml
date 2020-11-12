@@ -1,0 +1,49 @@
+---
+- name: Retrieve configmap kube-proxy from context {{ kubernetes_context }} (exec on localhost)
+  community.kubernetes.k8s_info:
+    kind: ConfigMap
+    namespace: kube-system
+    name: kube-proxy
+    kubeconfig: "{{ kubernetes_kubeconfig }}"
+    context: "{{ kubernetes_context }}"
+  register: kubeproxy_output
+  delegate_to: 127.0.0.1
+
+- name: Select key config.conf from ConfigMap kube-proxy and store into variable
+  set_fact:
+    configconf_yaml: "{{ kubeproxy_output | json_query('resources[0].data.\"config.conf\"' ) | from_yaml }}"
+
+- name: Select strictARP setting from key and store into variable
+  set_fact:
+    current_strictARP: "{{ configconf_yaml.ipvs.strictARP }}"
+
+- name: strictARP set correctly. Nothing to do.
+  debug:
+    msg: "Desired state: Desired: {{ kubernetes_strictARP}}, Cluster: {{ current_strictARP }}"
+  when: current_strictARP == kubernetes_strictARP
+
+- name: Change strictARP setting
+  block:
+    - name: strictARP not set correctly. About to patch context {{ kubernetes_context }}
+      debug:
+        msg: "desired state: desired: {{ kubernetes_strictARP}}, current: {{ current_strictARP }}"
+    
+    - name: Prepare configmap key. Set strictARP to desired value in key config.conf
+      set_fact:
+        configconf_yaml: "{{ configconf_yaml | combine({'ipvs':{'strictARP': kubernetes_strictARP}}, recursive=True)}}"
+
+    - name: Patch configmap kube-proxy on context {{ kubernetes_context }} (exec on localhost)
+      community.kubernetes.k8s:
+        kubeconfig: "{{ kubernetes_kubeconfig }}"
+        context: "{{ kubernetes_context }}"
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: kube-proxy
+            namespace: kube-system
+          data:
+            config.conf: 
+              "{{ configconf_yaml | to_nice_yaml }}"
+      delegate_to: 127.0.0.1
+  when: current_strictARP != kubernetes_strictARP

@@ -1,0 +1,5 @@
+---
+# tasks file for ansible-role-minikube
+- name: Set strictARP (from localhost)
+  include_tasks: set-strictarp.yml
+
