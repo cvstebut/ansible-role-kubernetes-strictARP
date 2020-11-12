@@ -1,7 +1,7 @@
 Role Name
 =========
 
-This Ansible role sets the strictARP setting in the kube-system/kube-proxy namespace.
+This Ansible role sets the strictARP setting in ConfigMap `kube-proxy` within the `kube-system` namespace (Setting `strictARP` to true is a requirement for using MetalLB.)
 
 The processing is done on the controller node by way of the k8s* modules.
 
