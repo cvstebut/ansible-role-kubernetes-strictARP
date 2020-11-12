@@ -31,6 +31,8 @@ kubernetes_kubeconfig: /home/ansible/.ci/kubeconfig/kubeconfig_minikube04/config
 kubernetes_context: "minikube04"
 ```
 
+
+Short description of inidividual variables
 - `kubernetes_strictARP: [true|false]`
 - `kubernetes_kubeconfig`: Valid kubeconfig file for accessing the desired context
 - `kubernetes_context`: Targetes Kubernetes context (cluster)
